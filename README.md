@@ -90,7 +90,7 @@ desktop (DBeaver, Azure Data Studio, RedisInsight, etc.):
 | Lançamentos | `localhost:5433` | `LANCAMENTOS_DB_USER`/`LANCAMENTOS_DB_PASSWORD` do `.env` |
 | Consolidado (primary) | `localhost:5434` | `CONSOLIDADO_DB_USER`/`CONSOLIDADO_DB_PASSWORD` do `.env` |
 | Consolidado (replica) | `localhost:5435` | idem primary (mesmas credenciais, banco replicado) |
-| Redis | `localhost:6379` | sem autenticação (uso local) |
+| Redis | `localhost:6379` | ACL: usuário `default` (`REDIS_ADMIN_PASSWORD`, acesso total) ou o usuário do Consolidado (`REDIS_APP_USER`/`REDIS_APP_PASSWORD`, restrito às chaves `consolidado:*`), ambos do `.env` |
 
 ## Como testar (Swagger)
 

@@ -74,12 +74,34 @@ services:
       timeout: 5s
       retries: 10
 
+  # ACL (Redis 6+) em vez de só "--requirepass": separa o usuário "default" (acesso total, só para
+  # ferramentas de inspeção/humanos) do usuário do Consolidado (acesso de leitura/escrita restrito
+  # ao seu próprio namespace de chaves "consolidado:*", sem comandos administrativos/perigosos).
   redis:
     image: redis:7-alpine
+    command:
+      - redis-server
+      - --user
+      - default
+      - "on"
+      - ">${REDIS_ADMIN_PASSWORD}"
+      - "~*"
+      - "&*"
+      - "+@all"
+      - --user
+      - "${REDIS_APP_USER}"
+      - "on"
+      - ">${REDIS_APP_PASSWORD}"
+      - "~consolidado:*"
+      - "-@all"
+      - "+@read"
+      - "+@write"
+      - "+@connection"
+      - "-@dangerous"
     ports:
       - "6379:6379" # acesso via cliente desktop (RedisInsight, etc.) - uso local/dev
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_ADMIN_PASSWORD}", "--no-auth-warning", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -124,7 +146,7 @@ services:
       RabbitMq__VirtualHost: "/"
       RabbitMq__Username: ${RABBITMQ_USER}
       RabbitMq__Password: ${RABBITMQ_PASSWORD}
-      Redis__ConnectionString: "redis:6379"
+      Redis__ConnectionString: "redis:6379,user=${REDIS_APP_USER},password=${REDIS_APP_PASSWORD}"
       Redis__TtlSeconds: "5"
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
       Jwt__Issuer: FluxoCaixa.Lancamentos
@@ -158,7 +180,7 @@ services:
   redis-commander:
     image: rediscommander/redis-commander:latest
     environment:
-      REDIS_HOSTS: local:redis:6379
+      REDIS_HOSTS: "local:redis:6379:0:${REDIS_ADMIN_PASSWORD}"
     ports:
       - "8081:8081" # http://localhost:8081
     depends_on:
