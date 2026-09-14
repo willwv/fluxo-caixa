@@ -10,17 +10,17 @@ cada decisão está detalhado nas [ADRs](docs/adr/) (Architecture Decision Recor
 ## Sumário
 
 - [FluxoCaixa — Controle de Fluxo de Caixa](#fluxocaixa--controle-de-fluxo-de-caixa)
-  - [Sumário](#sumário)
-  - [Arquitetura em uma imagem](#arquitetura-em-uma-imagem)
-  - [Como rodar localmente](#como-rodar-localmente)
-  - [Como testar (Swagger)](#como-testar-swagger)
-  - [Como rodar os testes automatizados](#como-rodar-os-testes-automatizados)
-  - [Decisões arquiteturais (ADRs)](#decisões-arquiteturais-adrs)
-  - [Requisitos não funcionais — como foram endereçados](#requisitos-não-funcionais--como-foram-endereçados)
-  - [Testes de carga (k6)](#testes-de-carga-k6)
-  - [Estrutura do repositório](#estrutura-do-repositório)
-  - [Padrões de projeto e boas práticas aplicadas](#padrões-de-projeto-e-boas-práticas-aplicadas)
-  - [Evoluções futuras](#evoluções-futuras)
+- [Sumário](#sumário)
+- [Arquitetura em uma imagem](#arquitetura-em-uma-imagem)
+- [Como rodar localmente](#como-rodar-localmente)
+- [Como testar (Swagger)](#como-testar-swagger)
+- [Como rodar os testes automatizados](#como-rodar-os-testes-automatizados)
+- [Decisões arquiteturais (ADRs)](#decisões-arquiteturais-adrs)
+- [Requisitos não funcionais — como foram endereçados](#requisitos-não-funcionais--como-foram-endereçados)
+- [Testes de carga (k6)](#testes-de-carga-k6)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Padrões de projeto e boas práticas aplicadas](#padrões-de-projeto-e-boas-práticas-aplicadas)
+- [Evoluções futuras](#evoluções-futuras)
 
 ## Arquitetura em uma imagem
 
