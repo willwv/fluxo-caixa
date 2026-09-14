@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.15.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="4.15.0" />
+    <PackageReference Include="Testcontainers.Redis" Version="4.15.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lancamentos\FluxoCaixa.Lancamentos.Api\FluxoCaixa.Lancamentos.Api.csproj" />
+    <!-- Alias necessário: os dois *.Api usam top-level statements, então ambos geram uma classe
+         "Program" no namespace global - sem o alias, referenciar as duas no mesmo teste seria ambíguo. -->
+    <ProjectReference Include="..\..\src\Consolidado\FluxoCaixa.Consolidado.Api\FluxoCaixa.Consolidado.Api.csproj" Aliases="ConsolidadoApi" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\FluxoCaixa.Contracts\FluxoCaixa.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

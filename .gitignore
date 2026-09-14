@@ -1,0 +1,20 @@
+# Build artifacts
+bin/
+obj/
+out/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Testcontainers / Docker
+docker-compose.override.yml
+
+# Secrets locais
+.env
+
+# OS
+.DS_Store
+Thumbs.db
