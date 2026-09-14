@@ -9,8 +9,6 @@ cada decisão está detalhado nas [ADRs](docs/adr/) (Architecture Decision Recor
 
 ## Sumário
 
-- [FluxoCaixa — Controle de Fluxo de Caixa](#fluxocaixa--controle-de-fluxo-de-caixa)
-- [Sumário](#sumário)
 - [Arquitetura em uma imagem](#arquitetura-em-uma-imagem)
 - [Como rodar localmente](#como-rodar-localmente)
 - [Como testar (Swagger)](#como-testar-swagger)
