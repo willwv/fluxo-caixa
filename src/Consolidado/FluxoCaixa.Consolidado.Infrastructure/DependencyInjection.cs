@@ -32,7 +32,12 @@ public static class DependencyInjection
 
         services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
         services.AddSingleton<IConnectionMultiplexer>(sp =>
-            ConnectionMultiplexer.Connect(sp.GetRequiredService<IOptions<CacheOptions>>().Value.ConnectionString));
+        {
+            var configurationOptions = ConfigurationOptions.Parse(sp.GetRequiredService<IOptions<CacheOptions>>().Value.ConnectionString);
+            configurationOptions.AbortOnConnectFail = false;
+
+            return ConnectionMultiplexer.Connect(configurationOptions);
+        });
         services.AddSingleton<IRedisCache, RedisCache>();
 
         services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));

@@ -36,6 +36,6 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResultDto?>
             return null;
 
         var token = _tokenGenerator.GerarToken(user.Id, user.Username);
-        return new LoginResultDto(token, DateTime.UtcNow.AddHours(1));
+        return new LoginResultDto(token.Token, token.ExpiraEm);
     }
 }

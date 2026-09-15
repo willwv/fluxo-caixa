@@ -5,3 +5,5 @@ namespace FluxoCaixa.Lancamentos.Application.Common;
 public record AuthUser(Guid Id, string Username, string PasswordHash);
 
 public record LoginResultDto(string Token, DateTime ExpiraEm);
+
+public record TokenGerado(string Token, DateTime ExpiraEm);

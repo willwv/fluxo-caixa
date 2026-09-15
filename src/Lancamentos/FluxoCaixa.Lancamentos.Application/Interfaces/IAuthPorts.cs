@@ -17,5 +17,5 @@ public interface IPasswordHasher
 
 public interface IJwtTokenGenerator
 {
-    string GerarToken(Guid userId, string username);
+    TokenGerado GerarToken(Guid userId, string username);
 }

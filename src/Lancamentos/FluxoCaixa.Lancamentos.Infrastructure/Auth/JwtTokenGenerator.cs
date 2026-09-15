@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using FluxoCaixa.Lancamentos.Application.Common;
 using FluxoCaixa.Lancamentos.Application.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -13,10 +14,11 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public JwtTokenGenerator(IOptions<JwtOptions> options) => _options = options.Value;
 
-    public string GerarToken(Guid userId, string username)
+    public TokenGerado GerarToken(Guid userId, string username)
     {
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+        var expiraEm = DateTime.UtcNow.AddHours(_options.ExpirationHours);
 
         var claims = new[]
         {
@@ -29,9 +31,9 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             issuer: _options.Issuer,
             audience: _options.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(_options.ExpirationHours),
+            expires: expiraEm,
             signingCredentials: credentials);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return new TokenGerado(new JwtSecurityTokenHandler().WriteToken(token), expiraEm);
     }
 }

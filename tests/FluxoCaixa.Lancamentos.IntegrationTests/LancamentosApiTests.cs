@@ -88,12 +88,13 @@ public class LancamentosApiTests : IClassFixture<LancamentosApiFixture>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    // Data fixa e exclusiva deste teste para não sofrer interferência dos lançamentos criados
-    // (com a data de hoje) pelos outros testes que compartilham o mesmo banco via fixture.
-    private static readonly DateOnly DataPaginacao = new(2020, 1, 15);
+    // Cada teste de paginação usa a SUA PRÓPRIA data, por dois motivos somados: datas antigas e
+    // fixas não sofrem interferência dos outros testes da classe (que criam lançamentos com a data
+    // de hoje), e uma data por teste evita que os três testes que semeiam dados entrem na contagem
+    // uns dos outros - a fixture, e portanto o banco, é compartilhada pela classe inteira.
     private const int QuantidadeLancamentosPaginacao = 3;
 
-    private async Task<HttpClient> ClientePaginacaoComLancamentosCriadosAsync()
+    private async Task<HttpClient> ClientePaginacaoComLancamentosCriadosAsync(DateOnly data)
     {
         var client = _fixture.CreateClient();
         var token = await ObterTokenAsync();
@@ -101,7 +102,7 @@ public class LancamentosApiTests : IClassFixture<LancamentosApiFixture>
 
         for (var i = 0; i < QuantidadeLancamentosPaginacao; i++)
         {
-            var comando = new CriarLancamentoCommand(DataPaginacao, TipoLancamento.Credito, 10m + i, $"Lançamento paginação {i}");
+            var comando = new CriarLancamentoCommand(data, TipoLancamento.Credito, 10m + i, $"Lançamento paginação {i}");
             var criar = await client.PostAsJsonAsync("/lancamentos", comando);
             criar.EnsureSuccessStatusCode();
         }
@@ -112,10 +113,11 @@ public class LancamentosApiTests : IClassFixture<LancamentosApiFixture>
     [Fact]
     public async Task Listar_DeveUsarTamanhoDePaginaFixoDeTrinta()
     {
-        var client = await ClientePaginacaoComLancamentosCriadosAsync();
+        var data = new DateOnly(2020, 1, 15);
+        var client = await ClientePaginacaoComLancamentosCriadosAsync(data);
 
         var pagina = await client.GetFromJsonAsync<PaginaResultado<LancamentoDto>>(
-            $"/lancamentos?data={DataPaginacao:yyyy-MM-dd}&pagina=1");
+            $"/lancamentos?data={data:yyyy-MM-dd}&pagina=1");
 
         pagina!.TamanhoPagina.Should().Be(30);
         pagina.Itens.Should().HaveCount(QuantidadeLancamentosPaginacao);
@@ -128,10 +130,11 @@ public class LancamentosApiTests : IClassFixture<LancamentosApiFixture>
     {
         // O controller não expõe "tamanhoPagina" como parâmetro - passá-lo na query string não
         // deve ter nenhum efeito, o tamanho continua sendo o valor fixo do servidor (30).
-        var client = await ClientePaginacaoComLancamentosCriadosAsync();
+        var data = new DateOnly(2020, 1, 16);
+        var client = await ClientePaginacaoComLancamentosCriadosAsync(data);
 
         var pagina = await client.GetFromJsonAsync<PaginaResultado<LancamentoDto>>(
-            $"/lancamentos?data={DataPaginacao:yyyy-MM-dd}&pagina=1&tamanhoPagina=1");
+            $"/lancamentos?data={data:yyyy-MM-dd}&pagina=1&tamanhoPagina=1");
 
         pagina!.TamanhoPagina.Should().Be(30);
         pagina.Itens.Should().HaveCount(QuantidadeLancamentosPaginacao);
@@ -140,10 +143,11 @@ public class LancamentosApiTests : IClassFixture<LancamentosApiFixture>
     [Fact]
     public async Task Listar_ComPaginaAlemDoTotal_DeveRetornarVazioMasComMetadadosCorretos()
     {
-        var client = await ClientePaginacaoComLancamentosCriadosAsync();
+        var data = new DateOnly(2020, 1, 17);
+        var client = await ClientePaginacaoComLancamentosCriadosAsync(data);
 
         var pagina = await client.GetFromJsonAsync<PaginaResultado<LancamentoDto>>(
-            $"/lancamentos?data={DataPaginacao:yyyy-MM-dd}&pagina=2");
+            $"/lancamentos?data={data:yyyy-MM-dd}&pagina=2");
 
         pagina!.Itens.Should().BeEmpty();
         pagina.TotalItens.Should().Be(QuantidadeLancamentosPaginacao);
@@ -157,7 +161,7 @@ public class LancamentosApiTests : IClassFixture<LancamentosApiFixture>
         var token = await ObterTokenAsync();
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var response = await client.GetAsync($"/lancamentos?data={DataPaginacao:yyyy-MM-dd}&pagina=0");
+        var response = await client.GetAsync($"/lancamentos?data=2020-01-18&pagina=0");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

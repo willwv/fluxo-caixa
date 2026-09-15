@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using FluxoCaixa.Consolidado.Infrastructure.Cache;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using StackExchange.Redis;
@@ -21,7 +22,7 @@ public class RedisCacheTests
     }
 
     private RedisCache CriarCache(int ttlSeconds = 5) =>
-        new(_redis, Options.Create(new CacheOptions { TtlSeconds = ttlSeconds }));
+        new(_redis, Options.Create(new CacheOptions { TtlSeconds = ttlSeconds }), NullLogger<RedisCache>.Instance);
 
     [Fact]
     public async Task ObterAsync_ComCacheHit_DeveDesserializarERetornarSemChamarAOrigem()
@@ -95,5 +96,47 @@ public class RedisCacheTests
         await CriarCache().ObterAsync("chave:teste", Origem, cts.Token);
 
         tokenRecebido.Should().Be(cts.Token);
+    }
+
+    [Fact]
+    public async Task ObterAsync_ComRedisIndisponivelNaLeitura_DeveCairParaAOrigemEmVezDePropagarAExcecao()
+    {
+        _database.StringGetAsync(Arg.Any<RedisKey>())
+            .Returns<Task<RedisValue>>(_ => throw new RedisConnectionException(ConnectionFailureType.UnableToConnect, "redis fora"));
+
+        var valor = new ValorDeTeste("saldo", 42);
+
+        var resultado = await CriarCache().ObterAsync(
+            "chave:teste", _ => Task.FromResult<ValorDeTeste?>(valor), CancellationToken.None);
+
+        resultado.Should().Be(valor);
+    }
+
+    [Fact]
+    public async Task ObterAsync_ComRedisIndisponivelNaGravacao_DeveDevolverOValorDaOrigemMesmoAssim()
+    {
+        _database.StringGetAsync(Arg.Any<RedisKey>()).Returns(RedisValue.Null);
+        _database.StringSetAsync(Arg.Any<RedisKey>(), Arg.Any<RedisValue>(), Arg.Any<Expiration>())
+            .Returns<Task<bool>>(_ => throw new RedisConnectionException(ConnectionFailureType.UnableToConnect, "redis fora"));
+
+        var valor = new ValorDeTeste("saldo", 42);
+
+        var resultado = await CriarCache().ObterAsync(
+            "chave:teste", _ => Task.FromResult<ValorDeTeste?>(valor), CancellationToken.None);
+
+        resultado.Should().Be(valor);
+    }
+
+    [Fact]
+    public async Task ObterAsync_ComConteudoCorrompidoNoCache_DeveCairParaAOrigem()
+    {
+        _database.StringGetAsync(Arg.Any<RedisKey>()).Returns((RedisValue)"{ isso nao e json valido");
+
+        var valor = new ValorDeTeste("saldo", 42);
+
+        var resultado = await CriarCache().ObterAsync(
+            "chave:teste", _ => Task.FromResult<ValorDeTeste?>(valor), CancellationToken.None);
+
+        resultado.Should().Be(valor);
     }
 }
