@@ -19,6 +19,7 @@ public class RedisCacheTests
     public RedisCacheTests()
     {
         _redis.GetDatabase().Returns(_database);
+        _redis.IsConnected.Returns(true);
     }
 
     private RedisCache CriarCache(int ttlSeconds = 5) =>
@@ -138,5 +139,24 @@ public class RedisCacheTests
             "chave:teste", _ => Task.FromResult<ValorDeTeste?>(valor), CancellationToken.None);
 
         resultado.Should().Be(valor);
+    }
+
+    [Fact]
+    public async Task ObterAsync_ComMultiplexerDesconectado_DeveIrDiretoParaAOrigemSemTocarNoRedis()
+    {
+        _redis.IsConnected.Returns(false);
+
+        var valor = new ValorDeTeste("saldo", 42);
+
+        var resultado = await CriarCache().ObterAsync(
+            "chave:teste", _ => Task.FromResult<ValorDeTeste?>(valor), CancellationToken.None);
+
+        resultado.Should().Be(valor);
+
+        // O ponto do curto-circuito é justamente não pagar o SyncTimeout de cada comando
+        // enquanto a conexão não volta - nenhuma chamada deve chegar ao Redis.
+        await _database.DidNotReceiveWithAnyArgs().StringGetAsync(default(RedisKey));
+        await _database.DidNotReceiveWithAnyArgs().StringSetAsync(
+            default(RedisKey), default(RedisValue), default(Expiration), default(ValueCondition), default(CommandFlags));
     }
 }

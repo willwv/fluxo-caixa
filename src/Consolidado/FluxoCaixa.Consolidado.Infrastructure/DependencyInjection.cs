@@ -35,6 +35,9 @@ public static class DependencyInjection
         {
             var configurationOptions = ConfigurationOptions.Parse(sp.GetRequiredService<IOptions<CacheOptions>>().Value.ConnectionString);
             configurationOptions.AbortOnConnectFail = false;
+            configurationOptions.BacklogPolicy = BacklogPolicy.FailFast;
+            configurationOptions.ConnectTimeout = 1000;
+            configurationOptions.ConnectRetry = 1;
 
             return ConnectionMultiplexer.Connect(configurationOptions);
         });

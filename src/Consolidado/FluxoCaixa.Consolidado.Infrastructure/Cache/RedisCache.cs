@@ -20,6 +20,12 @@ public class RedisCache : IRedisCache
 
     public async Task<T?> ObterAsync<T>(string chave, Func<CancellationToken, Task<T?>> obterValorParaCacheAsync, CancellationToken cancellationToken)
     {
+        if (!_redis.IsConnected)
+        {
+            _logger.LogWarning("Redis desconectado; a leitura da chave {Chave} vai direto para a origem.", chave);
+            return await obterValorParaCacheAsync(cancellationToken);
+        }
+
         var (encontrado, valorCacheado) = await TentarLerAsync<T>(chave);
 
         if (encontrado)
